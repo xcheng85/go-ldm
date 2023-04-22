@@ -1,0 +1,32 @@
+syntax = "proto3";
+package ldm.v1;
+option go_package = "github.com/xcheng85/go-ldm/api/ldm_v1";
+
+service Ldm {
+  rpc WriteTile(WriteTileRequest) returns (WriteTileResponse) {}
+  rpc ReadTile(ReadTileRequest) returns (ReadTileResponse) {}
+
+  rpc ReadTileStream(ReadTileRequest) returns (stream ReadTileResponse) {}
+  rpc WriteTileStream(stream WriteTileRequest) returns (stream WriteTileResponse) {}
+}
+
+message WriteTileRequest  {
+  Tile tile = 1;
+}
+
+message WriteTileResponse  {
+  uint64 offset = 1;
+}
+
+message ReadTileRequest {
+  uint64 offset = 1;
+}
+
+message ReadTileResponse {
+  Tile tile = 2;
+}
+
+message Tile {
+  bytes value = 1;
+  uint64 offset = 2;
+}
