@@ -6,6 +6,11 @@ import (
 	"google.golang.org/grpc"
 )
 
+// dependencies injection for LDMServer
+type LDMManager interface {
+	Write(*pb.Tile) (uint64, error)
+	Read(offset uint64) (*pb.Tile, error)
+}
 
 // server is used to implement the interface in ldm_grpc.pb.go
 // // LdmServer is the server API for Ldm service.
@@ -19,6 +24,9 @@ import (
 // 	mustEmbedUnimplementedLdmServer()
 // }
 type LDMServer struct {
+	// embedded field type cannot be a pointer to an interface
+	// *LDMManager
+	LDMManager
 	// https://stackoverflow.com/questions/65079032/grpc-with-mustembedunimplemented-method
 	pb.UnimplementedLdmServer
 }
@@ -76,15 +84,16 @@ func (s *LDMServer) ReadTileStream(request *pb.ReadTileRequest, stream pb.Ldm_Re
 	}
 }
 
-func newLDMServer() (ldmServer *LDMServer, err error) {
+func newLDMServer(ldm LDMManager) (ldmServer *LDMServer, err error) {
 	ldmServer = &LDMServer{
+		LDMManager: ldm,
 	}
 	return ldmServer, nil
 }
 
-func NewGRPCServer() (*grpc.Server, error) {
+func NewGRPCServer(ldm LDMManager) (*grpc.Server, error) {
 	s := grpc.NewServer()
-	ldmServer, err := newLDMServer()
+	ldmServer, err := newLDMServer(ldm)
 	if err != nil {
 		return nil, err
 	}

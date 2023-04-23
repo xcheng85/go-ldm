@@ -7,6 +7,7 @@ import (
 	"testing"
 	"github.com/stretchr/testify/require"
 	pb "github.com/xcheng85/go-ldm/server/api/v1"
+	"github.com/xcheng85/go-ldm/server/internal/ldm"
 	"google.golang.org/grpc"
 )
 
@@ -45,9 +46,8 @@ func setupTest(t *testing.T, fn func()) (
 
 	// dir, err := ioutil.TempDir("", "server-test")
 	// require.NoError(t, err)
-
-	// clog, err := log.NewLog(dir, log.Config{})
-	// require.NoError(t, err)
+	ldm, err := ldm.NewLDMManager()
+	require.NoError(t, err)
 
 	// config = &Config{
 	// 	CommitLog: clog,
@@ -55,7 +55,7 @@ func setupTest(t *testing.T, fn func()) (
 	if fn != nil {
 		fn()
 	}
-	server, err := NewGRPCServer()
+	server, err := NewGRPCServer(ldm)
 	require.NoError(t, err)
 	// grpc server serve goroutine
 	go func() {
